@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
 from db.user_db import insert_user, find_user_by_name
+import uuid
 
 user_bp = Blueprint('user_bp', __name__)
 
@@ -9,7 +10,7 @@ user_bp = Blueprint('user_bp', __name__)
 def register():
     data = request.get_json()
     user = {
-        "user_id": data['user_id'],
+        "user_id": uuid.uuid4().hex,
         "user_name": data['user_name'],
         "password": generate_password_hash(data['password'])
     }
