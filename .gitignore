@@ -1,2 +1,4 @@
 # dependencies
 /__pycache__
+/db/__pycache__
+/routes/__pycache__
