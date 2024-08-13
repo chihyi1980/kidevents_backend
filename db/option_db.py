@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-from bson.objectid import ObjectId
+from bson import ObjectId
 from config import Config
 
 client = MongoClient(Config.MONGO_URI)
