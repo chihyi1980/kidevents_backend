@@ -6,7 +6,7 @@ loc_bp = Blueprint('loc_bp', __name__)
 @loc_bp.route('/loc/create', methods=['POST'])
 def create_loc():
     loc_data = request.json
-    loc_data['isEnabled'] = 1
+    loc_data['isEnable'] = 1
     result = insert_loc(loc_data)
     return jsonify({"message": "Location created successfully", "id": str(result.inserted_id)}), 201
 

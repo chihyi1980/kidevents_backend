@@ -6,7 +6,7 @@ tag_bp = Blueprint('tag_bp', __name__)
 @tag_bp.route('/tag/create', methods=['POST'])
 def create_tag():
     tag_data = request.json
-    tag_data['isEnabled'] = 1
+    tag_data['isEnable'] = 1
     result = insert_tag(tag_data)
     return jsonify({"message": "tag created successfully", "id": str(result.inserted_id)}), 201
 

@@ -55,7 +55,7 @@ def bulk_update_tag(updates):
     for update in updates:
         tag_id = update.pop('_id', None)
         if tag_id:
-            update_result = loc_collection.update_one(
+            update_result = tag_collection.update_one(
                 {'_id': ObjectId(tag_id)},
                 {'$set': update}
             )
