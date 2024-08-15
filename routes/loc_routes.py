@@ -1,15 +1,16 @@
 from flask import Blueprint, jsonify, request
-from db.option_db import insert_loc, find_all_loc, find_loc_by_id, update_loc, delete_loc
+from db.option_db import bulk_update_loc, insert_loc, find_all_loc, find_loc_by_id, update_loc, delete_loc
 
 loc_bp = Blueprint('loc_bp', __name__)
 
-@loc_bp.route('/loc', methods=['POST'])
+@loc_bp.route('/loc/create', methods=['POST'])
 def create_loc():
     loc_data = request.json
+    loc_data['isEnabled'] = 1
     result = insert_loc(loc_data)
     return jsonify({"message": "Location created successfully", "id": str(result.inserted_id)}), 201
 
-@loc_bp.route('/loc', methods=['GET'])
+@loc_bp.route('/loc/list', methods=['GET'])
 def get_all_locs():
     locs = find_all_loc()
     return jsonify([{**loc, "_id": str(loc["_id"])} for loc in locs])
@@ -36,3 +37,14 @@ def delete_loc_route(loc_id):
     if result.deleted_count:
         return jsonify({"message": "Location deleted successfully"})
     return jsonify({"message": "Location not found"}), 404
+
+@loc_bp.route('/loc/bulk-update', methods=['PUT'])
+def bulk_update_locs():
+    update_data = request.json
+    if not isinstance(update_data, list):
+        return jsonify({"message": "Invalid input. Expected a list of location updates."}), 400
+
+    results = bulk_update_loc(update_data)
+    return jsonify({
+        "message": "Bulk update completed",
+    })
