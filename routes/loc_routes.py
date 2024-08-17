@@ -13,7 +13,8 @@ def create_loc():
 @loc_bp.route('/loc/list', methods=['GET'])
 def get_all_locs():
     locs = find_all_loc()
-    return jsonify([{**loc, "_id": str(loc["_id"])} for loc in locs])
+    sorted_locs = sorted(locs, key=lambda x: x.get('order', 0))
+    return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_locs])
 
 @loc_bp.route('/loc/<loc_id>', methods=['GET'])
 def get_loc(loc_id):

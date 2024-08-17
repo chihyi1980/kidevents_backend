@@ -13,7 +13,8 @@ def create_tag():
 @tag_bp.route('/tag/list', methods=['GET'])
 def get_all_tags():
     tags = find_all_tag()
-    return jsonify([{**tag, "_id": str(tag["_id"])} for tag in tags])
+    sorted_tags = sorted(tags, key=lambda x: x.get('order', 0))
+    return jsonify([{**tag, "_id": str(tag["_id"])} for tag in sorted_tags])
 
 @tag_bp.route('/tag/<tag_id>', methods=['GET'])
 def get_tag(tag_id):
