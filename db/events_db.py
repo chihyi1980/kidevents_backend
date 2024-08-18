@@ -2,7 +2,7 @@ from pymongo import MongoClient
 from config import Config
 
 client = MongoClient(Config.MONGO_URI)
-events_db = client['cms_db']
+events_db = client['events_db']
 events_collection = events_db['events']
 
 def insert_event(event):
