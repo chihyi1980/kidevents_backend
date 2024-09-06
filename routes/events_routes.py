@@ -1,7 +1,7 @@
 from datetime import datetime 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from db.events_db import insert_event, find_all_events
+from db.events_db import insert_event, find_all_events, update_event, find_event_by_id
 import pytz
 
 
@@ -38,3 +38,18 @@ def get_events():
     return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_events])
 
 
+@events_bp.route('/events/<event_id>', methods=['PUT'])
+def update_event_route(event_id):
+    event_data = request.json
+    result = update_event(event_id, event_data)
+    if result.modified_count:
+        return jsonify({"message": "Event updated successfully"})
+    return jsonify({"message": "Event not found"}), 404
+
+@events_bp.route('/event/<event_id>', methods=['GET'])
+def get_event(event_id):
+    event = find_event_by_id(event_id)
+    if event:
+        event['_id'] = str(event['_id'])
+        return jsonify(event)
+    return jsonify({"message": "Event not found"}), 404
