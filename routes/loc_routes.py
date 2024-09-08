@@ -6,15 +6,24 @@ loc_bp = Blueprint('loc_bp', __name__)
 @loc_bp.route('/loc/create', methods=['POST'])
 def create_loc():
     loc_data = request.json
-    loc_data['isEnable'] = 1
+    loc_data['is_enabled'] = True
     result = insert_loc(loc_data)
     return jsonify({"message": "Location created successfully", "id": str(result.inserted_id)}), 201
+
 
 @loc_bp.route('/loc/list', methods=['GET'])
 def get_all_locs():
     locs = find_all_loc()
-    sorted_locs = sorted(locs, key=lambda x: x.get('order', 0))
+    
+    # 过滤掉 isEnable != True 的 loc
+    enabled_locs = filter(lambda x: x.get('is_enabled') == True, locs)
+    
+    # 按 order 排序
+    sorted_locs = sorted(enabled_locs, key=lambda x: x.get('order', 0))
+    
+    # 返回结果并将 _id 转换为字符串
     return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_locs])
+
 
 @loc_bp.route('/loc/<loc_id>', methods=['GET'])
 def get_loc(loc_id):

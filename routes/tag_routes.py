@@ -6,13 +6,17 @@ tag_bp = Blueprint('tag_bp', __name__)
 @tag_bp.route('/tag/create', methods=['POST'])
 def create_tag():
     tag_data = request.json
-    tag_data['isEnable'] = 1
+    tag_data['is_enabled'] = True
     result = insert_tag(tag_data)
     return jsonify({"message": "tag created successfully", "id": str(result.inserted_id)}), 201
 
 @tag_bp.route('/tag/list', methods=['GET'])
 def get_all_tags():
     tags = find_all_tag()
+    
+    # 过滤掉 isEnable != True 的 tags
+    tags = filter(lambda x: x.get('is_enabled', 0) == True, tags)
+    
     sorted_tags = sorted(tags, key=lambda x: x.get('order', 0))
     return jsonify([{**tag, "_id": str(tag["_id"])} for tag in sorted_tags])
 
