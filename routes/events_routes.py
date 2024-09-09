@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from db.events_db import insert_event, find_all_events, update_event, find_event_by_id
 import pytz
+from db.option_db import find_all_loc
 
 
 events_bp = Blueprint('events_bp', __name__)
@@ -69,18 +70,34 @@ def get_event(event_id):
 
 @events_bp.route('/events/online_list', methods=['GET'])
 def get_online_events():
-    # 过滤掉 is_enabled != True 的 events
+    # 过滤掉 is_enabled != True && is_online != True 的 events
     events = [event for event in find_all_events() if (event.get('is_enabled') == True and event.get('is_online') == True)]
+
+    locs = find_all_loc()
+    locs_dict = {}
+    for loc in locs:
+        locs_dict[str(loc['_id'])] = loc['value']
+    
+    print(locs_dict)
 
     # 遍歷每個事件，提取 events_tag 中的 _id 並存入 events_tag_ids
     for event in events:
         # 假設 events_tag 是一個列表，提取其中的每個 _id
         if 'event_tag' in event:
-            event_tag_ids = [tag.get('_id') for tag in event['event_tag'] if '_id' in tag]
-            event['event_tag_ids'] = event_tag_ids
+            event_tag_names = [tag.get('value') for tag in event['event_tag'] if '_id' in tag]
+            event['event_tag_names'] = event_tag_names
+            del event['event_tag']
+        if 'event_loc' in event:
+            event['event_loc_name'] = locs_dict[event['event_loc']]
+            del event['event_loc']
+        del event['created_at']
+        del event['updated_at']
+        del event['is_enabled']
+        del event['is_online']
 
+        
     # 將事件按 created_at 日期從新到舊排序
     sorted_events = sorted(events, key=lambda x: x.get('created_at', 0), reverse=True)
 
     # 返回結果，並將 _id 轉換為字符串
-    return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_events])
+    return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_events]) 
