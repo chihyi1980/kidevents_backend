@@ -77,8 +77,6 @@ def get_online_events():
     locs_dict = {}
     for loc in locs:
         locs_dict[str(loc['_id'])] = loc['value']
-    
-    print(locs_dict)
 
     # 遍歷每個事件，提取 events_tag 中的 _id 並存入 events_tag_ids
     for event in events:
@@ -95,9 +93,16 @@ def get_online_events():
         del event['is_enabled']
         del event['is_online']
 
+        # 將 event_start_date 格式化為 yyyy-MM-dd
+        event_start_date = datetime.strptime(event['event_start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        event['event_start_date'] = event_start_date.strftime('%Y-%m-%d')
+
+        # 將 event_end_date 格式化為 yyyy-MM-dd
+        event_end_date = datetime.strptime(event['event_end_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        event['event_end_date'] = event_end_date.strftime('%Y-%m-%d')
         
-    # 將事件按 created_at 日期從新到舊排序
-    sorted_events = sorted(events, key=lambda x: x.get('created_at', 0), reverse=True)
+    # 將事件按 event_start_date 日期從舊到新排序
+    sorted_events = sorted(events, key=lambda x: x.get('event_start_date', 0), reverse=False)
 
     # 返回結果，並將 _id 轉換為字符串
     return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_events]) 
