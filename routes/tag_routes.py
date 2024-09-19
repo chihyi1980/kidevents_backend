@@ -53,3 +53,15 @@ def bulk_update_tags():
     return jsonify({
         "message": "Bulk update completed",
     })
+
+@tag_bp.route('/tag/online_list', methods=['GET'])
+def get_online_tags():
+    tags = find_all_tag()
+    
+    # 过滤掉 isEnable != True 的 tags
+    tags = filter(lambda x: x.get('is_enabled', 0) == True, tags)
+    
+    sorted_tags = sorted(tags, key=lambda x: x.get('order', 0))
+    
+    # Return only the values of the sorted_locs dictionary
+    return jsonify([tag['value'] for tag in sorted_tags])

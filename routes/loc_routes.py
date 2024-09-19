@@ -58,3 +58,16 @@ def bulk_update_locs():
     return jsonify({
         "message": "Bulk update completed",
     })
+
+@loc_bp.route('/loc/online_list', methods=['GET'])
+def get_online_locs():
+    locs = find_all_loc()
+    
+    # 过滤掉 isEnable != True 的 loc
+    enabled_locs = filter(lambda x: x.get('is_enabled') == True, locs)
+    
+    # 按 order 排序
+    sorted_locs = sorted(enabled_locs, key=lambda x: x.get('order', 0))
+    
+    # Return only the values of the sorted_locs dictionary
+    return jsonify([loc['value'] for loc in sorted_locs])
