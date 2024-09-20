@@ -60,12 +60,16 @@ def update_event_route(event_id):
         return jsonify({"message": "Event updated successfully"})
     return jsonify({"message": "Event not found"}), 404
 
-@events_bp.route('/event/<event_id>', methods=['GET'])
+@events_bp.route('/events/<event_id>', methods=['GET'])
 def get_event(event_id):
     event = find_event_by_id(event_id)
     if event:
-        event['_id'] = str(event['_id'])
-        return jsonify(event)
+        temp = {}
+        temp['event_link'] = event['event_link']
+        temp['event_content'] = event['event_content']
+        temp['event_loc_detail'] = event['event_loc_detail']
+        temp['_id'] = str(event['_id'])
+        return jsonify(temp)
     return jsonify({"message": "Event not found"}), 404
 
 @events_bp.route('/events/online_list', methods=['GET'])
@@ -92,6 +96,9 @@ def get_online_events():
         del event['updated_at']
         del event['is_enabled']
         del event['is_online']
+        del event['event_link']
+        del event['event_content']
+        del event['event_loc_detail']
 
         # 將 event_start_date 格式化為 yyyy-MM-dd
         event_start_date = datetime.strptime(event['event_start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
