@@ -60,8 +60,8 @@ def update_event_route(event_id):
         return jsonify({"message": "Event updated successfully"})
     return jsonify({"message": "Event not found"}), 404
 
-@events_bp.route('/events/<event_id>', methods=['GET'])
-def get_event(event_id):
+@events_bp.route('/events/online_detail/<event_id>', methods=['GET'])
+def get_event_detail(event_id):
     event = find_event_by_id(event_id)
     if event:
         temp = {}
@@ -70,6 +70,43 @@ def get_event(event_id):
         temp['event_loc_detail'] = event['event_loc_detail']
         temp['_id'] = str(event['_id'])
         return jsonify(temp)
+    return jsonify({"message": "Event not found"}), 404
+
+@events_bp.route('/events/<event_id>', methods=['GET'])
+def get_event(event_id):
+    event = find_event_by_id(event_id)
+
+    if event:
+        locs = find_all_loc()
+        locs_dict = {}
+        for loc in locs:
+            locs_dict[str(loc['_id'])] = loc['value']
+        
+        # 假設 events_tag 是一個列表，提取其中的每個 _id
+        if 'event_tag' in event:
+            event_tag_names = [tag.get('value') for tag in event['event_tag'] if '_id' in tag]
+            event['event_tag_names'] = event_tag_names
+            del event['event_tag']
+        if 'event_loc' in event:
+            event['event_loc_name'] = locs_dict[event['event_loc']]
+            del event['event_loc']
+        del event['created_at']
+        del event['updated_at']
+        del event['is_enabled']
+        del event['is_online']
+
+        # 將 event_start_date 格式化為 yyyy-MM-dd
+        event_start_date = datetime.strptime(event['event_start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        event['event_start_date'] = event_start_date.strftime('%Y-%m-%d')
+
+        # 將 event_end_date 格式化為 yyyy-MM-dd
+        event_end_date = datetime.strptime(event['event_end_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+        event['event_end_date'] = event_end_date.strftime('%Y-%m-%d')
+
+        event['_id'] = str(event['_id'])
+
+        return jsonify(event)
+
     return jsonify({"message": "Event not found"}), 404
 
 @events_bp.route('/events/online_list', methods=['GET'])
