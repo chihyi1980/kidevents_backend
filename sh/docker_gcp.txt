@@ -1,0 +1,3 @@
+sudo docker build -t kidevents-backend .
+docker tag kidevents-backend asia-east1-docker.pkg.dev/powerful-host-436506-k9/kidevents-backend/kidevents-backend:latest
+docker push asia-east1-docker.pkg.dev/powerful-host-436506-k9/kidevents-backend/kidevents-backend:latest
