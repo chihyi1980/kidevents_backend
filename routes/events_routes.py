@@ -9,7 +9,7 @@ from db.option_db import find_all_loc
 events_bp = Blueprint('events_bp', __name__)
 
 @events_bp.route('/events/create', methods=['POST'])
-@jwt_required()
+# @jwt_required()
 def add_event():
     data = request.get_json()
        
