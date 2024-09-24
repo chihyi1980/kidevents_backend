@@ -75,6 +75,14 @@ def get_event_detail(event_id):
 @events_bp.route('/events/<event_id>', methods=['GET'])
 def get_event(event_id):
     event = find_event_by_id(event_id)
+    if event:
+        event['_id'] = str(event['_id'])
+        return jsonify(event)
+    return jsonify({"message": "Event not found"}), 404
+
+@events_bp.route('/events/online/<event_id>', methods=['GET'])
+def get_event_online(event_id):
+    event = find_event_by_id(event_id)
 
     if event:
         locs = find_all_loc()
