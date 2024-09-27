@@ -5,7 +5,6 @@ from db.events_db import insert_event, find_all_events, update_event, find_event
 import pytz
 from db.option_db import find_all_loc
 
-
 events_bp = Blueprint('events_bp', __name__)
 
 @events_bp.route('/events/create', methods=['POST'])
@@ -39,8 +38,6 @@ def get_events():
 
     # 返回結果，並將 _id 轉換為字符串
     return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_events])
-
-
 
 @events_bp.route('/events/<event_id>', methods=['PUT'])
 def update_event_route(event_id):
