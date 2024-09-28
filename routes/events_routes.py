@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from db.events_db import insert_event, find_all_events, update_event, find_event_by_id
 import pytz
-from db.option_db import find_all_loc
+from db.option_db import find_all_loc, find_all_tag
 
 events_bp = Blueprint('events_bp', __name__)
 
@@ -37,7 +37,7 @@ def get_events():
     sorted_events = sorted(events, key=lambda x: x.get('created_at', 0), reverse=True)
 
     # 返回結果，並將 _id 轉換為字符串
-    return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_events])
+    return jsonify([{**event, "_id": str(event["_id"])} for event in sorted_events])
 
 @events_bp.route('/events/<event_id>', methods=['PUT'])
 def update_event_route(event_id):
@@ -143,15 +143,59 @@ def get_online_events():
         del event['event_loc_detail']
 
         # 將 event_start_date 格式化為 yyyy-MM-dd
-        event_start_date = datetime.strptime(event['event_start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        event['event_start_date'] = event_start_date.strftime('%Y-%m-%d')
+        try:
+            event_start_date = datetime.strptime(event['event_start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            event['event_start_date'] = event_start_date.strftime('%Y-%m-%d')
+        except ValueError:
+            # 日期格式不符合指定格式，保持原始值
+            pass
 
         # 將 event_end_date 格式化為 yyyy-MM-dd
-        event_end_date = datetime.strptime(event['event_end_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        event['event_end_date'] = event_end_date.strftime('%Y-%m-%d')
+        try:
+            event_end_date = datetime.strptime(event['event_end_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            event['event_end_date'] = event_end_date.strftime('%Y-%m-%d')
+        except ValueError:
+            # 日期格式不符合指定格式，保持原始值
+            pass
         
     # 將事件按 event_start_date 日期從舊到新排序
     sorted_events = sorted(events, key=lambda x: x.get('event_start_date', 0), reverse=False)
 
     # 返回結果，並將 _id 轉換為字符串
     return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_events]) 
+
+#處理由爬蟲自動生成的add event
+@events_bp.route('/events/create_crawler', methods=['POST'])
+# @jwt_required()
+def add_event_crawler():
+    data = request.get_json()
+
+    #先建立 loc map，將 縣市名稱 轉換為 id
+    locs = find_all_loc()
+    locs_dict = {}
+    for loc in locs:
+        locs_dict[loc['value']] = str(loc['_id']) 
+
+    #轉換 loc_name to loc
+    data['event_loc'] = locs_dict[data['event_loc_name']]
+    del data['event_loc_name']
+
+    tags = find_all_tag()
+    tags_dict = {}
+    for tag in tags:
+        tag['_id'] = str(tag['_id'])
+        tags_dict[tag['value']] = tag
+
+    data['event_tag'] = []
+    for tag_name in data['event_tag_name']:
+        data['event_tag'].append(tags_dict[tag_name])
+    del data['event_tag_name']
+       
+    utc_now = datetime.now(pytz.utc)
+    local_time = utc_now.astimezone(pytz.timezone('Asia/Taipei'))
+    data['created_at'] = local_time.isoformat()
+    data['updated_at'] = local_time.isoformat()
+    data['is_online'] = False
+    data['is_enabled'] = True
+    insert_event(data)
+    return jsonify({"msg": "Event added successfully"}), 201
