@@ -21,7 +21,7 @@ used_url_collection = crawler_db['used_url']
     'event_org' : '台北市立天文科學教育館'   //活動機構名稱
 }
 """
-crawler_confing_collection = crawler_db['crawler_confing']
+crawler_config_collection = crawler_db['crawler_config']
 
 
 def insert_used_url(url):
@@ -33,7 +33,7 @@ def is_url_exist(url):
     return result is not None
 
 def insert_crawler_config(config):
-    return crawler_confing_collection.insert_one(config)
+    return crawler_config_collection.insert_one(config)
 
 def find_all_crawler_config():
-    return list(crawler_confing_collection.find())
+    return list(crawler_config_collection.find())

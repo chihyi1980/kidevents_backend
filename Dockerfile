@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# 設置時區為 Asia/Taipei (UTC+8)
+ENV TZ=Asia/Taipei
+
 # 升级 pip, setuptools 和 wheel
 RUN pip install --upgrade pip setuptools wheel
 
