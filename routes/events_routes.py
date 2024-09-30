@@ -134,7 +134,7 @@ def get_online_events():
         if 'event_loc' in event:
             event['event_loc_name'] = locs_dict[event['event_loc']]
             del event['event_loc']
-        del event['created_at']
+        # del event['created_at']
         del event['updated_at']
         del event['is_enabled']
         del event['is_online']
@@ -158,8 +158,8 @@ def get_online_events():
             # 日期格式不符合指定格式，保持原始值
             pass
         
-    # 將事件按 event_start_date 日期從舊到新排序
-    sorted_events = sorted(events, key=lambda x: x.get('event_start_date', 0), reverse=False)
+    # 將事件按 created_at 日期從舊到新排序
+    sorted_events = sorted(events, key=lambda x: x.get('created_at', 0), reverse=True)
 
     # 返回結果，並將 _id 轉換為字符串
     return jsonify([{**loc, "_id": str(loc["_id"])} for loc in sorted_events]) 
@@ -188,8 +188,12 @@ def add_event_crawler():
 
     data['event_tag'] = []
     for tag_name in data['event_tag_name']:
-        data['event_tag'].append(tags_dict[tag_name])
+        try:
+            data['event_tag'].append(tags_dict[tag_name])
+        except KeyError:
+            continue
     del data['event_tag_name']
+
        
     utc_now = datetime.now(pytz.utc)
     local_time = utc_now.astimezone(pytz.timezone('Asia/Taipei'))
