@@ -6,6 +6,7 @@ from routes.events_routes import events_bp
 from routes.loc_routes import loc_bp
 from routes.tag_routes import tag_bp
 from routes.crawler_routes import crawler_bp
+from routes.openai_routes import openai_bp
 from config import Config
 
 app = Flask(__name__)
@@ -20,6 +21,7 @@ app.register_blueprint(events_bp, url_prefix='/api')
 app.register_blueprint(loc_bp, url_prefix='/api')
 app.register_blueprint(tag_bp, url_prefix='/api')
 app.register_blueprint(crawler_bp, url_prefix='/api')
+app.register_blueprint(openai_bp, url_prefix='/api')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
