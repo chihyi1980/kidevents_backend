@@ -5,6 +5,10 @@ from db.events_db import insert_event, find_all_events, update_event, find_event
 import pytz
 from db.option_db import find_all_loc, find_all_tag
 
+# 定義 UTC 和目標時區
+utc = pytz.UTC
+target_tz = pytz.timezone('Asia/Taipei')  # UTC+8 時區，以台北為例
+
 events_bp = Blueprint('events_bp', __name__)
 
 @events_bp.route('/events/create', methods=['POST'])
@@ -101,12 +105,22 @@ def get_event_online(event_id):
         del event['is_online']
 
         # 將 event_start_date 格式化為 yyyy-MM-dd
-        event_start_date = datetime.strptime(event['event_start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        event['event_start_date'] = event_start_date.strftime('%Y-%m-%d')
+        try:
+            event_start_date = datetime.strptime(event['event_start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            event_start_date = event_start_date.replace(tzinfo=utc).astimezone(target_tz)
+            event['event_start_date'] = event_start_date.strftime('%Y-%m-%d')
+        except ValueError:
+            # 日期格式不符合指定格式，保持原始值
+            pass
 
         # 將 event_end_date 格式化為 yyyy-MM-dd
-        event_end_date = datetime.strptime(event['event_end_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        event['event_end_date'] = event_end_date.strftime('%Y-%m-%d')
+        try:
+            event_end_date = datetime.strptime(event['event_end_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            event_end_date = event_end_date.replace(tzinfo=utc).astimezone(target_tz)
+            event['event_end_date'] = event_end_date.strftime('%Y-%m-%d')
+        except ValueError:
+            # 日期格式不符合指定格式，保持原始值
+            pass
 
         event['_id'] = str(event['_id'])
 
@@ -145,6 +159,7 @@ def get_online_events():
         # 將 event_start_date 格式化為 yyyy-MM-dd
         try:
             event_start_date = datetime.strptime(event['event_start_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            event_start_date = event_start_date.replace(tzinfo=utc).astimezone(target_tz)
             event['event_start_date'] = event_start_date.strftime('%Y-%m-%d')
         except ValueError:
             # 日期格式不符合指定格式，保持原始值
@@ -153,6 +168,7 @@ def get_online_events():
         # 將 event_end_date 格式化為 yyyy-MM-dd
         try:
             event_end_date = datetime.strptime(event['event_end_date'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            event_end_date = event_end_date.replace(tzinfo=utc).astimezone(target_tz)
             event['event_end_date'] = event_end_date.strftime('%Y-%m-%d')
         except ValueError:
             # 日期格式不符合指定格式，保持原始值
