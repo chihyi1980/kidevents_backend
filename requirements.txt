@@ -89,3 +89,5 @@ wsproto==1.2.0
 zipp==1.0.0
 zope.interface==5.5.0
 openai
+cloudscraper
+beautifulsoup4
