@@ -2,3 +2,5 @@
 /__pycache__
 /db/__pycache__
 /routes/__pycache__
+config.py
+config.py.prod
