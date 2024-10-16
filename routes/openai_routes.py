@@ -7,6 +7,7 @@ from model.crawler import get_page_content
 from db.events_db import insert_event
 from db.option_db import find_all_loc, find_all_tag
 import pytz
+from utils.tokens import count_tokens, trim_content
 
 openai_bp = Blueprint('openai_bp', __name__)
 
@@ -27,7 +28,7 @@ def add_openai_new_event():
     # 將 JSON 物件轉換為字串
     tags_str = json.dumps(tags_value, ensure_ascii=False)
 
-    msg = '''
+    msg_template = '''
     我會輸入一個網站內容，請幫我分析這個網站內容幫我轉化為標準JSON格式，格式如下:  {
 	"event_name",  //活動名稱
 	"event_start_date",  //活動開始日期，格式為 yyyy-MM-dd
@@ -43,13 +44,13 @@ def add_openai_new_event():
     如果內文並沒有寫出 max_age  min_age event_price event_img ，該欄位可以空著。
     event_tag_name 欄位請從
     '''
-    msg += tags_str
-    msg += '''
+    msg_template += tags_str
+    msg_template += '''
     裡面幫我挑出1到3個最符合的填入，內容為JSON array 格式，一定只能從這裏面挑選，不能自己創造。
     最後，你的回答只需要寫出標準JSON格式，不要寫任何額外的文字。網站的內容如下:
     '''
-    msg += str(eventContent)
-    resp = chat(msg)
+    msg_template += str(eventContent)
+    resp = chat(msg_template)
 
     # 將純文字轉換為 JSON 物件，由於open ai 回覆內容會在前後加入  ```json 與 ``` ，故將其去除再轉換為JSON
     event_json = json.loads(resp.strip("```json").strip("```").strip())
@@ -74,6 +75,8 @@ def add_event_url():
     # 將 <img> 標籤字串加入到 eventText 的最尾端
     for img in img_tags:
         eventText += '\n' + str(img)
+        #只抓第一張圖片，後面放棄
+        break
 
     #找出目前所有活動類型
     tags = find_all_tag()
@@ -83,7 +86,7 @@ def add_event_url():
     # 將 JSON 物件轉換為字串
     tags_str = json.dumps(tags_value, ensure_ascii=False)
 
-    msg = '''
+    msg_template = '''
     我會輸入一個網站內容，請幫我分析這個網站內容幫我轉化為標準JSON格式，格式如下:  {
 	"event_name",  //活動名稱
 	"event_start_date",  //活動開始日期，格式為 yyyy-MM-dd
@@ -99,12 +102,16 @@ def add_event_url():
     如果內文並沒有寫出 max_age  min_age event_price event_img ，該欄位可以空著。
     event_tag_name 欄位請從
     '''
-    msg += tags_str
-    msg += '''
+    msg_template += tags_str
+    msg_template += '''
     裡面幫我挑出1到3個最符合的填入，內容為JSON array 格式，一定只能從這裏面挑選，不能自己創造。
     最後，你的回答只需要寫出標準JSON格式，不要寫任何額外的文字。網站的內容如下:
     '''
-    msg += str(eventContent)
+
+    # 裁減 eventText 如果超過 token 限制
+    trimmed_eventText = trim_content(msg_template, tags_str, eventText)
+    msg = msg_template + trimmed_eventText
+
     resp = chat(msg)
 
     # 將純文字轉換為 JSON 物件，由於open ai 回覆內容會在前後加入  ```json 與 ``` ，故將其去除再轉換為JSON
@@ -148,4 +155,4 @@ def add_event_url():
     data['is_online'] = False
     data['is_enabled'] = True
     insert_event(data)
-    return jsonify({"msg": "Event added successfully"}), 201
+    return jsonify({"msg_template": "Event added successfully"}), 201

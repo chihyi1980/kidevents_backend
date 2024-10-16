@@ -91,3 +91,4 @@ zope.interface==5.5.0
 openai
 cloudscraper
 beautifulsoup4
+tiktoken
