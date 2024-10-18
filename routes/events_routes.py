@@ -186,15 +186,17 @@ def get_online_events():
 def add_event_crawler():
     data = request.get_json()
 
-    #先建立 loc map，將 縣市名稱 轉換為 id
-    locs = find_all_loc()
-    locs_dict = {}
-    for loc in locs:
-        locs_dict[loc['value']] = str(loc['_id']) 
+    #如果在config 中有指定 loc name，則轉換為 loc id，如果沒有則不選
+    if 'event_loc_name' in data:
+        #先建立 loc map，將 縣市名稱 轉換為 id
+        locs = find_all_loc()
+        locs_dict = {}
+        for loc in locs:
+            locs_dict[loc['value']] = str(loc['_id']) 
 
-    #轉換 loc_name to loc
-    data['event_loc'] = locs_dict[data['event_loc_name']]
-    del data['event_loc_name']
+        #轉換 loc_name to loc
+        data['event_loc'] = locs_dict[data['event_loc_name']]
+        del data['event_loc_name']
 
     tags = find_all_tag()
     tags_dict = {}
