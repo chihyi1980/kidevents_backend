@@ -115,44 +115,63 @@ def add_event_url():
     resp = chat(msg)
 
     # 將純文字轉換為 JSON 物件，由於open ai 回覆內容會在前後加入  ```json 與 ``` ，故將其去除再轉換為JSON
-    data = json.loads(resp.strip("```json").strip("```").strip())
+    event_json = json.loads(resp.strip("```json").strip("```").strip())
 
     #TODO
-    print(data)
+    print('event_json', event_json)
 
-    #先建立 loc map，將 縣市名稱 轉換為 id
-    """
-    locs = find_all_loc()
-    locs_dict = {}
-    for loc in locs:
-        locs_dict[loc['value']] = str(loc['_id']) 
-
-    #轉換 loc_name to loc
-    data['event_loc'] = locs_dict[data['event_loc_name']]
-    del data['event_loc_name']
-    """
-
+    #預載入所有活動類型存入 dict
     tags = find_all_tag()
     tags_dict = {}
     for tag in tags:
         tag['_id'] = str(tag['_id'])
         tags_dict[tag['value']] = tag
 
-    data['event_tag'] = []
-    for tag_name in data['event_tag_name']:
-        try:
-            data['event_tag'].append(tags_dict[tag_name])
-        except KeyError:
-            continue
-    del data['event_tag_name']
+    # 判斷類型 是一個活動還是多個活動
+    # 如果是一個
+    if isinstance(event_json, dict):
+        data = event_json
 
-    data['event_link'] = req_data['url']
-       
-    utc_now = datetime.now(pytz.utc)
-    local_time = utc_now.astimezone(pytz.timezone('Asia/Taipei'))
-    data['created_at'] = local_time.isoformat()
-    data['updated_at'] = local_time.isoformat()
-    data['is_online'] = False
-    data['is_enabled'] = True
-    insert_event(data)
-    return jsonify({"msg_template": "Event added successfully"}), 201
+        data['event_tag'] = []
+        for tag_name in data['event_tag_name']:
+            try:
+                data['event_tag'].append(tags_dict[tag_name])
+            except KeyError:
+                continue
+        del data['event_tag_name']
+
+        data['event_link'] = req_data['url']
+        
+        utc_now = datetime.now(pytz.utc)
+        local_time = utc_now.astimezone(pytz.timezone('Asia/Taipei'))
+        data['created_at'] = local_time.isoformat()
+        data['updated_at'] = local_time.isoformat()
+        data['is_online'] = False
+        data['is_enabled'] = True
+        insert_event(data)
+        
+        return jsonify({"msg_template": "Event added successfully"}), 201
+    
+    # 如果是多個
+    elif isinstance(event_json, list):
+        for data in event_json:
+
+            data['event_tag'] = []
+            for tag_name in data['event_tag_name']:
+                try:
+                    data['event_tag'].append(tags_dict[tag_name])
+                except KeyError:
+                    continue
+            del data['event_tag_name']
+
+            data['event_link'] = req_data['url']
+            
+            utc_now = datetime.now(pytz.utc)
+            local_time = utc_now.astimezone(pytz.timezone('Asia/Taipei'))
+            data['created_at'] = local_time.isoformat()
+            data['updated_at'] = local_time.isoformat()
+            data['is_online'] = False
+            data['is_enabled'] = True
+            insert_event(data)
+            
+        return jsonify({"msg_template": "Event list added successfully"}), 201
