@@ -89,8 +89,8 @@ def add_event_url():
     msg_template = '''
     我會輸入一個網站內容，請幫我分析這個網站內容幫我轉化為標準JSON格式，格式如下:  {
 	"event_name",  //活動名稱
-	"event_start_date",  //活動開始日期，格式為 yyyy-MM-dd
-	"event_end_date",    //活動結束日期，格式為 yyyy-MM-dd
+	"event_start_date",  //活動開始日期，格式為 yyyy-MM-dd，一旦無法判斷活動開始日期的年份，請一概預設為2024年
+	"event_end_date",    //活動結束日期，格式為 yyyy-MM-dd，一旦無法判斷活動結束日期的年份，請一概預設為2024年
 	"event_min_age"		//最小參與活動年齡，若是國小生則最小年齡為6歲
 	"event_max_age",    //最大參與活動年齡，若是國小生則最大年齡為12歲
 	"event_price",	//活動費用
