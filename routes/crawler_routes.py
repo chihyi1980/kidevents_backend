@@ -1,6 +1,6 @@
 from datetime import datetime 
 from flask import Blueprint, request, jsonify
-from db.crawler_db import insert_used_url, is_url_exist, insert_crawler_config, find_all_crawler_config
+from db.crawler_db import insert_used_url, is_url_exist, insert_crawler_config, find_all_crawler_config, update_crawler_config
 
 crawler_bp = Blueprint('crawler_bp', __name__)
 
@@ -36,3 +36,29 @@ def get_config():
     
     # 返回結果，並將 _id 轉換為字符串
     return jsonify([{**con, "_id": str(con["_id"])} for con in configs])
+
+# 取得 crawler config ，並且依照取得的順序，將其hour與 min 分別設置為從00:00分開始，每一個時間間隔十分鐘
+@crawler_bp.route('/crawler/config/resetRunTime', methods=['GET'])
+def reset_run_time():
+    configs = find_all_crawler_config()
+    
+    # 初始化時間
+    current_hour = 0
+    current_minute = 0
+    
+    for con in configs:
+        
+        # 更新時間
+        current_minute += 10
+        if current_minute >= 60:
+            current_minute = 0
+            current_hour += 1
+        
+        data = {}
+        data['hour'] = current_hour
+        data['minute'] = current_minute
+
+        # 打印設置的時間
+        update_crawler_config(str(con['_id']), data)
+    
+    return 'OK'

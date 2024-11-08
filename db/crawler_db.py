@@ -5,7 +5,7 @@ from config import Config
 client = MongoClient(Config.MONGO_URI)
 crawler_db = client['crawler_db']
 
-#紀錄已經爬娶過的url
+#紀錄已經爬取過的url
 used_url_collection = crawler_db['used_url']
 
 #爬蟲設置JSON
@@ -37,3 +37,6 @@ def insert_crawler_config(config):
 
 def find_all_crawler_config():
     return list(crawler_config_collection.find())
+
+def update_crawler_config(config_id, data):
+    crawler_config_collection.update_one({'_id': ObjectId(config_id)}, {'$set': data})
