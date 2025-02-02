@@ -17,3 +17,6 @@ def update_event(event_id, updated_data):
 
 def find_event_by_id(event_id):
     return events_collection.find_one({'_id': ObjectId(event_id)})
+
+def delete_event(event_id):
+    return events_collection.delete_one({'_id': ObjectId(event_id)})

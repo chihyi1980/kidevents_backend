@@ -1,7 +1,7 @@
 from datetime import datetime 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-from db.events_db import insert_event, find_all_events, update_event, find_event_by_id
+from db.events_db import insert_event, find_all_events, update_event, find_event_by_id, delete_event
 import pytz
 from db.option_db import find_all_loc, find_all_tag
 
@@ -221,3 +221,10 @@ def add_event_crawler():
     data['is_enabled'] = True
     insert_event(data)
     return jsonify({"msg": "Event added successfully"}), 201
+
+@events_bp.route('/events/<event_id>', methods=['DELETE'])
+def delete_event_route(event_id):
+    result = delete_event(event_id)
+    if result.deleted_count:
+        return jsonify({"message": "Event deleted successfully"})
+    return jsonify({"message": "Event not found"}), 404
