@@ -217,7 +217,7 @@ def add_event_crawler():
     local_time = utc_now.astimezone(pytz.timezone('Asia/Taipei'))
     data['created_at'] = local_time.isoformat()
     data['updated_at'] = local_time.isoformat()
-    data['is_online'] = False
+    data['is_online'] = True
     data['is_enabled'] = True
     insert_event(data)
     return jsonify({"msg": "Event added successfully"}), 201
