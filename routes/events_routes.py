@@ -27,8 +27,7 @@ def add_event():
 
 @events_bp.route('/events/list', methods=['GET'])
 def get_events():
-    # 过滤掉 is_enabled != True 的 events
-    events = [event for event in find_all_events() if event.get('is_enabled') == True]
+    events = [event for event in find_all_events()]
 
     # 遍歷每個事件，提取 events_tag 中的 _id 並存入 events_tag_ids
     for event in events:
